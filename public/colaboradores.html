@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Our Http Project</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Colaboradores</h1>
+        <nav id="navMenu">
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="treinamento.html">Consulta</a></li>
+                <li><a href="colaboradores.html">Colaboradores</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>Lista de funcionários e treinamentos.</p>
+        <table id="colaboradoresTable">
+            <thead>
+                <tr>
+                    <th>nome</th>
+                    <th>matrícula</th>
+                    <th>treinamento</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--rows will be populated here-->
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        async function fetchColaboradores() {
+            const response = await fetch('http://localhost:8000/colaboradores');
+            const colaboradores = await response.json();
+
+            const tableBody = document.querySelector('#colaboradoresTable tbody');
+            tableBody.innerHTML = ''; //Clear existing rows
+
+            colaboradores.forEach(colaborador => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${colaborador.nome}</td>
+                    <td>${colaborador.matricula}</td>
+                    <td>${colaborador.treinamento}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        // fetch data when the page loads
+        window.onload = fetchColaboradores;
+    </script>
+
+    <script src="script.js"></script>
+
+</body> 
+</html>  

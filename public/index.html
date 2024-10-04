@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Popup</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>A.I.P.F Ltda</h1>
+        <nav id="navMenu" style="display: none;">
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="treinamento.html">Consulta</a></li>
+                <li><a href="colaboradores.html">colaboradores</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <button id="loginBtn">Login</button>
+        
+        <div id="loginPopup" class="popup">
+            <div class="popup-content">
+                <span class="close">&times;</span>
+                <form id="loginForm">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" name="username" required>
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required>
+                    <button id="buttonPopup" type="submit">entrar</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

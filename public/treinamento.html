@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Our Http Project</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Consulta</h1>
+        <nav id="navMenu">
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="treinamento.html">Consulta</a></li>
+                <li><a href="colaboradores.html">colaboradores</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>Informe nome ou matrícula do colaborador.</p>
+    </main>
+    <div class="signin-container">
+        <form id="formBusca">
+            <div class="input-group">
+                <label for="username">funcionário</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div class="input-group">
+                <label for="matricula">matrícula</label>
+                <input type="number" id="matricula" name="matricula">
+            </div>
+            <button type="submit">procurar</button>
+        </form>
+    </div>
+
+    <div id="resultado"></div>
+    <script>
+        document.getElementById('formBusca').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const matricula = document.getElementById('matricula').value;
+
+            fetch('http://localhost:8000/buscar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, matricula })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Colaborador não encontrado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado');
+                resultadoDiv.innerHTML = `
+                    <p>Nome: ${data[0].nome}</p>
+                    <p>Matrícula: ${data[0].matricula}</p>
+                    <p style="font-weight: bold;"> ${data[0].treinamento}</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerHTML = `<p>${error.message}</p>`;
+            });
+        });
+    </script>
+    <script src="script.js"></script>
+</body> 
+</html>  
