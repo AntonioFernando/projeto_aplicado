@@ -1,11 +1,13 @@
-create database BD_Ferramenta_Consulta;
+create database BD_ferramenta_consulta;
 use BD_ferramenta_consulta;
+
 CREATE TABLE Colaboradores (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(60) NOT NULL,
     matricula VARCHAR(50) NOT NULL UNIQUE,
     cargo VARCHAR(60) NOT NULL
 );
+
 use BD_ferramenta_consulta;
 CREATE TABLE Treinamentos (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -14,6 +16,7 @@ CREATE TABLE Treinamentos (
     validade_em_anos INT DEFAULT 0,
     status ENUM('Ativo', 'Inativo') NOT NULL DEFAULT 'Ativo'
 );
+
 use BD_ferramenta_consulta;
 CREATE TABLE Colaboradores_Treinamentos (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -26,3 +29,4 @@ CREATE TABLE Colaboradores_Treinamentos (
     FOREIGN KEY (colaborador_id) REFERENCES Colaboradores(id),
     FOREIGN KEY (treinamento_id) REFERENCES Treinamentos(id)
 );
+

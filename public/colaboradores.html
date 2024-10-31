@@ -24,7 +24,11 @@
                 <tr>
                     <th>nome</th>
                     <th>matrícula</th>
-                    <th>treinamento</th>
+                    <th>cargo</th>
+                    <th>nome_treinamento</th>
+                    <th>exigido_para_funcao</th>
+                    <th>validade_em_anos</th>
+                    <th>status</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +39,7 @@
 
     <script>
         async function fetchColaboradores() {
-            const response = await fetch('http://localhost:8000/colaboradores');
+            const response = await fetch('http://localhost:8000/BD_ferramenta_consulta');
             const colaboradores = await response.json();
 
             const tableBody = document.querySelector('#colaboradoresTable tbody');
@@ -46,7 +50,11 @@
                 row.innerHTML = `
                     <td>${colaborador.nome}</td>
                     <td>${colaborador.matricula}</td>
-                    <td>${colaborador.treinamento}</td>
+                    <td>${colaborador.cargo}</td>
+                    <td>${colaborador.nome_treinamento}</td>
+                    <td>${colaborador.exigido_para_funcao}</td>
+                    <td>${colaborador.validade_em_anos}</td>
+                    <td>${colaborador.status}</td>
                 `;
                 tableBody.appendChild(row);
             });

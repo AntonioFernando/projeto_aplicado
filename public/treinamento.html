@@ -60,7 +60,11 @@
                 resultadoDiv.innerHTML = `
                     <p>Nome: ${data[0].nome}</p>
                     <p>Matrícula: ${data[0].matricula}</p>
-                    <p style="font-weight: bold;"> ${data[0].treinamento}</p>
+                    <p>Cargo: ${data[0].cargo}</p>
+                    <p>Treinamento: ${data[0].nome_treinamento}</p>
+                    <p>Exigência: ${data[0].exigido_para_funcao}</p>
+                    <p>Validade: ${data[0].validade_em_anos}</p>
+                    <p>Situação: ${data[0].status}</p>
                 `;
             })
             .catch(error => {

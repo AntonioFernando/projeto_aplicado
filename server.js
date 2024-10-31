@@ -15,11 +15,20 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files f
 // Array to simulate users (normally from a database)
 const users = [];
 
-const db = mysql.createConnection({
+//base de dados 'colaboradores'
+const dbexemplo = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'mysql123',
     database: 'colaboradores'
+});
+
+//base de dados 'BD_ferramenta_consulta'
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'mysql123',
+    database: 'BD_ferramenta_consulta'
 });
 
 // gerencia erro ou sucesso da conexão com a base de dados.
@@ -34,10 +43,27 @@ db.connect((err) => {
 // procura colaboradores por nome ou matricula na base de dados do servidor.
 app.post('/buscar', (req, res) => {
     const { username, matricula } = req.body;
-    let sql = 'SELECT * FROM colaboradores WHERE nome = ? OR matricula = ?';
-
+    let sql = `
+        SELECT 
+            c.nome, 
+            c.matricula, 
+            c.cargo, 
+            t.nome_treinamento, 
+            t.exigido_para_funcao, 
+            t.validade_em_anos, 
+            ct.status
+        FROM 
+            Colaboradores c
+        LEFT JOIN 
+            Colaboradores_Treinamentos ct ON c.id = ct.colaborador_id
+        LEFT JOIN 
+            Treinamentos t ON ct.treinamento_id = t.id
+        WHERE 
+            c.nome LIKE ? OR c.matricula = ?;
+    `;
+    
     const values = [
-        username || null,
+        username ? `%${username}%` : null,
         matricula || null
     ];
 
@@ -85,8 +111,12 @@ app.get('/', (req, res) => {
 });
 
 // solicita a lista de colaboradores para a base de dados no servidor local.
-app.get('/colaboradores', (req, res) => {
-    const sql = 'SELECT * FROM colaboradores';
+app.get('/BD_ferramenta_consulta', (req, res) => {
+    const sql = `SELECT Colaboradores.nome, Treinamentos.nome_treinamento, 
+                        Colaboradores_Treinamentos.data_conclusao, Colaboradores_Treinamentos.status
+                 FROM Colaboradores
+                 JOIN Colaboradores_Treinamentos ON Colaboradores.id = Colaboradores_Treinamentos.colaborador_id
+                 JOIN Treinamentos ON Treinamentos.id = Colaboradores_Treinamentos.treinamento_id`;
     db.query(sql, (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Erro ao buscar os colaboradores' });
