@@ -45,16 +45,16 @@
             const tableBody = document.querySelector('#colaboradoresTable tbody');
             tableBody.innerHTML = ''; //Clear existing rows
 
-            colaboradores.forEach(colaborador => {
+            colaboradores.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${colaborador.nome}</td>
-                    <td>${colaborador.matricula}</td>
-                    <td>${colaborador.cargo}</td>
-                    <td>${colaborador.nome_treinamento}</td>
-                    <td>${colaborador.exigido_para_funcao}</td>
-                    <td>${colaborador.validade_em_anos}</td>
-                    <td>${colaborador.status}</td>
+                    <td>${item.nome}</td>
+                    <td>${item.matricula}</td>
+                    <td>${item.cargo}</td>
+                    <td>${item.nome_treinamento}</td>
+                    <td>${item.exigido_para_funcao}</td>
+                    <td>${item.validade_em_anos}</td>
+                    <td>${item.status}</td>
                 `;
                 tableBody.appendChild(row);
             });

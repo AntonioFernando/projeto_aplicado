@@ -61,7 +61,7 @@ app.post('/buscar', (req, res) => {
         WHERE 
             c.nome LIKE ? OR c.matricula = ?;
     `;
-    
+
     const values = [
         username ? `%${username}%` : null,
         matricula || null
@@ -112,17 +112,33 @@ app.get('/', (req, res) => {
 
 // solicita a lista de colaboradores para a base de dados no servidor local.
 app.get('/BD_ferramenta_consulta', (req, res) => {
-    const sql = `SELECT Colaboradores.nome, Treinamentos.nome_treinamento, 
-                        Colaboradores_Treinamentos.data_conclusao, Colaboradores_Treinamentos.status
-                 FROM Colaboradores
-                 JOIN Colaboradores_Treinamentos ON Colaboradores.id = Colaboradores_Treinamentos.colaborador_id
-                 JOIN Treinamentos ON Treinamentos.id = Colaboradores_Treinamentos.treinamento_id`;
+    const sql = `
+        SELECT 
+            c.nome, 
+            c.matricula, 
+            c.cargo, 
+            t.nome_treinamento, 
+            t.exigido_para_funcao, 
+            t.validade_em_anos, 
+            ct.status
+        FROM 
+            Colaboradores c
+        LEFT JOIN 
+            Colaboradores_Treinamentos ct ON c.id = ct.colaborador_id
+        LEFT JOIN 
+            Treinamentos t ON ct.treinamento_id = t.id
+    `;
     db.query(sql, (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Erro ao buscar os colaboradores' });
         }
         res.json(result);
     });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Erro critico. Pedimos sinceras desculpas.');
 });
 
 app.listen(port, () => {
