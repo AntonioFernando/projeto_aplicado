@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Http Project</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,22 +20,24 @@
     </header>
     <main>
         <p>Lista de funcionários e treinamentos.</p>
-        <table id="colaboradoresTable">
-            <thead>
-                <tr>
-                    <th>nome</th>
-                    <th>matrícula</th>
-                    <th>cargo</th>
-                    <th>nome_treinamento</th>
-                    <th>exigido_para_funcao</th>
-                    <th>validade_em_anos</th>
-                    <th>status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!--rows will be populated here-->
-            </tbody>
-        </table>
+        <div style = "overflow-x:auto;">
+            <table id="colaboradoresTable">
+                <thead>
+                    <tr>
+                        <th>nome</th>
+                        <th>matrícula</th>
+                        <th>cargo</th>
+                        <th>nome_treinamento</th>
+                        <th>exigido_para_funcao</th>
+                        <th>validade_em_anos</th>
+                        <th>status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--rows will be populated here-->
+                </tbody>
+            </table>
+        </div>
     </main>
 
     <script>
@@ -51,7 +54,7 @@
                     <td>${item.nome}</td>
                     <td>${item.matricula}</td>
                     <td>${item.cargo}</td>
-                    <td>${item.nome_treinamento}</td>
+                    <td>${item.nome_treinamentos}</td>
                     <td>${item.exigido_para_funcao}</td>
                     <td>${item.validade_em_anos}</td>
                     <td>${item.status}</td>

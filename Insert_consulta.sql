@@ -19,4 +19,5 @@ INSERT INTO Colaborador_Treinamentos (colaborador_id, treinamentos_id, data_conc
 (1, 1, '2023-01-15', '2025-01-15', 'Completo'),
 (2, 2, '2022-02-10', '2023-02-10', 'Vencido'),
 (3, 3, '2021-03-20', '2024-03-20', 'Completo'),
-(4, 4, '2022-05-10', '2023-05-10', 'Pendente');
+(4, 4, '2022-05-10', '2023-05-10', 'Pendente'),
+(5, 5, '2021-06,20', '2023-06-10', 'Pendente');

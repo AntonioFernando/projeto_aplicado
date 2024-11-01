@@ -48,16 +48,16 @@ app.post('/buscar', (req, res) => {
             c.nome, 
             c.matricula, 
             c.cargo, 
-            t.nome_treinamento, 
+            t.nome_treinamentos, 
             t.exigido_para_funcao, 
             t.validade_em_anos, 
             ct.status
         FROM 
-            Colaboradores c
+            Colaborador c
         LEFT JOIN 
-            Colaboradores_Treinamentos ct ON c.id = ct.colaborador_id
+            Colaborador_Treinamentos ct ON c.id = ct.colaborador_id
         LEFT JOIN 
-            Treinamentos t ON ct.treinamento_id = t.id
+            Treinamentos t ON ct.treinamentos_id = t.id
         WHERE 
             c.nome LIKE ? OR c.matricula = ?;
     `;
@@ -117,16 +117,16 @@ app.get('/BD_ferramenta_consulta', (req, res) => {
             c.nome, 
             c.matricula, 
             c.cargo, 
-            t.nome_treinamento, 
+            t.nome_treinamentos, 
             t.exigido_para_funcao, 
             t.validade_em_anos, 
             ct.status
         FROM 
-            Colaboradores c
+            Colaborador c
         LEFT JOIN 
-            Colaboradores_Treinamentos ct ON c.id = ct.colaborador_id
+            Colaborador_Treinamentos ct ON c.id = ct.colaborador_id
         LEFT JOIN 
-            Treinamentos t ON ct.treinamento_id = t.id
+            Treinamentos t ON ct.treinamentos_id = t.id
     `;
     db.query(sql, (err, result) => {
         if (err) {
