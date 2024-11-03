@@ -5,18 +5,13 @@ const closeBtn = document.getElementsByClassName('close')[0];
 // Open the popup
 loginBtn.onclick = function() {
     loginPopup.style.display = 'flex';
+    loginBtn.style.display = 'none';
 }
 
 // Close the popup
 closeBtn.onclick = function() {
     loginPopup.style.display = 'none';
-}
-
-// Close the popup when clicking outside of it
-window.onclick = function(event) {
-    if (event.target === loginPopup) {
-        loginPopup.style.display = 'none';
-    }
+    loginBtn.style.display = 'flex';
 }
 
 // Handle form submission

@@ -20,7 +20,7 @@
     </header>
     <main>
         <p>Lista de funcionários e treinamentos.</p>
-        <div style = "overflow-x:auto;">
+        <div id="tableDiv" style = "overflow-x:auto;">
             <table id="colaboradoresTable">
                 <thead>
                     <tr>
@@ -47,6 +47,8 @@
 
             const tableBody = document.querySelector('#colaboradoresTable tbody');
             tableBody.innerHTML = ''; //Clear existing rows
+
+            const uniqueColaboradores = new Map(); // Use a map to filter duplicates
 
             colaboradores.forEach(item => {
                 const row = document.createElement('tr');

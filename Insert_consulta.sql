@@ -1,10 +1,10 @@
 use Bd_ferramenta_consulta;
 INSERT INTO Colaborador (nome, matricula, cargo) VALUES 
-('Joao da Silva','01234','Operador de Maquinas'),
-('Maria Oliveira','01235','Tecnico de Seguranca'),
-('Carlos Santos','01236','Operador de Tratores'),
-('Ana Pereira', '01237', 'Supervisor de Campo'),
-('Lucas Almeida','01238','Assistente Administrativo');
+('Joao da Silva','12345','Operador de Maquinas'),
+('Maria Oliveira','12346','Tecnico de Seguranca'),
+('Carlos Santos','12347','Operador de Tratores'),
+('Ana Pereira', '12348', 'Supervisor de Campo'),
+('Lucas Almeida','12349','Assistente Administrativo');
 
 use Bd_ferramenta_consulta;
 INSERT INTO Treinamentos (nome_treinamentos, exigido_para_funcao, validade_em_anos, status) VALUES

@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(51, 219, 219);
+    background-color: rgb(184, 255, 255);
     font-family: Arial, Helvetica, sans-serif;
     display:flex;
     flex-direction: column;
@@ -13,30 +13,37 @@ header {
     align-items: center;
 }
 
+::selection {
+    background-color: #ff7b00; /* Cor de fundo da seleção */
+    color: #ffffff; /* Cor do texto selecionado */
+}
+
+
 p {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
     text-align: center;
     color: #032e54;
     margin-bottom: 30px;
 }
 
 h1 {
-    color: #032e54;
+    color: #0062b7;
     text-align: center;
     font-size: 110px;
     font-family: fantasy;
-    font-style: italic;
-    text-shadow: 10px -10px 5px #347fc0;
-    margin-top: 115px;
+    font-style:unset;
+    margin-top: 40px;
 }
 
-nav {
-    background-color: #032e54;
+#navMenu {
+    background-color: #0062b7;
     padding: 15px;
     width:fit-content;
     display: flex;
     justify-content: center;
-    border: 1px solid #347fc0;
-    box-shadow: 10px -10px 5px #347fc0
+    border: 1px solid #0062b7;
+    border-radius: 10px;
 }
 
 nav ul {
@@ -51,34 +58,39 @@ nav ul li {
 }
 
 nav ul li a {
-    color:aqua;
+    color:rgb(211, 255, 248);
     text-decoration: none;
+    font-family: fantasy;
     padding: 10px 15px;
     border-radius: 5px;
     transition: background-color 0.3s;
 }
 
 nav ul li a:hover {
-    background-color: aqua;
+    background-color: rgb(255, 103, 103);
     color: #032e54;
+}
+
+#tableDiv {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
 }
 
 #loginBtn, #buttonPopup {
     width: 100%;
-    color: aqua;
+    color: rgb(211, 255, 248);
     padding: 10px;
     border: none;
-    background-color: #032e54;
-    color: aqua;
+    background-color: #0062b7;
     border-radius: 4px;
     cursor: pointer;
     margin-top: 5px;
-    margin-bottom: 10px;
-    box-shadow: 10px -10px 5px #347fc0; 
+    margin-bottom: 10px; 
 }
 
 #loginBtn:hover, #buttonPopup:hover {
-    background-color: aqua;
+    background-color: rgb(255, 103, 103);
     color: #032e54;
 }
 
@@ -87,7 +99,7 @@ nav ul li a:hover {
     padding: 10px;
     border: none;
     background-color: #032e54;
-    color: aqua;
+    color: rgb(211, 255, 248);
     border-radius: 4px;
     cursor: pointer;
     margin-top: 15px;
@@ -95,25 +107,26 @@ nav ul li a:hover {
 }
 
 #buttonPopup:hover {
-    background-color: aqua;
+    background-color: #ff7b00;
     color: #032e54;
 }
 
 .popup {
     display: none; /* Initially hidden */
-    position: fixed;
-    background-color: #347fc0;
+    position: flex;
+    background-color: #0062b7;
     height: 150px;
-    width: 240px;
+    max-width: 240px;
     padding: 10px;
     border-radius: 8px;
-    box-shadow: 10px -10px 5px #032e54;
     align-items: center;
     justify-content: space-evenly;
 }
 
 .popup-content, .loginForm, .input-group {
     align-items: center;
+    font-family: verdana;
+    font-weight: bold;
     color: #032e54;
     margin-bottom: 10px;
 }
@@ -122,10 +135,11 @@ nav ul li a:hover {
 label {
     display: block;
     margin-bottom: -2px;
+    color: rgb(211, 255, 248);
 }
 
 .close {
-    color: #aaa;
+    color: black;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -134,7 +148,7 @@ label {
 
 .close:hover,
 .close:focus {
-    color: black;
+    color: #ff7b00;
     text-decoration: none;
 }
 
@@ -145,14 +159,14 @@ label {
 }
 
 .signin-container {
-    background-color: #347fc0;
+    background-color: #0062b7;
     display: flex;
     flex-direction: column;
-    height: 150px;
     width: 240px;
+    height: 150px;
+    max-width: 240px;
     padding: 10px;
     border-radius: 8px;
-    box-shadow: 10px -10px 5px #032e54;
     align-items: center;
     justify-content: space-evenly;
 }
@@ -164,15 +178,34 @@ label {
 
 .input-group {
     align-items: center;
-    color: #032e54;
+    
+    color: rgb(51, 219, 219);
     margin-bottom: 10px;
 }
 
+.status-pendente {
+    color: rgb(191, 159, 0);
+    font-weight: bold;
+}
 
+.status-vencido {
+    color: rgb(234, 86, 0);
+    font-weight: bold;
+}
+
+.status-concluido {
+    color: rgb(42, 96, 132);
+    font-weight: bold;
+}
 
 table {
     width: 80%;
-    border-collapse: collapse;
+    border-collapse: collapse; 
+    table-layout: auto;
+}
+
+th {
+    color: rgb(211, 255, 248);
 }
 
 th, td {
@@ -186,7 +219,7 @@ th {
     background-color: #347fc0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px) and (min-width: 250px) {
     h1 {
         font-size: 60px;
         margin-top: 30px;
@@ -195,6 +228,18 @@ th {
     p {
         font-size: 0.9em;
         margin-bottom: 15px;
+    }
+
+    .signin-container {
+        background-color: #0062b7;
+        display: flex;
+        flex-direction: column;
+        height: 150px;
+        max-width: 240px;
+        padding: 10px;
+        border-radius: 8px;
+        align-items: center;
+        justify-content: space-evenly;
     }
 
     nav ul {
@@ -209,11 +254,12 @@ th {
     table {
         width: 100%;
         overflow-x: auto;
+        table-layout: auto;
     }
 
     th, td {
         font-size: 0.8em;
-        padding: 5px;
+        padding: 8px;
     }
 
     .popup, .signin-container {
@@ -225,6 +271,18 @@ th {
 @media (max-width: 480px) {
     h1 {
         font-size: 40px;
+    }
+
+    .signin-container {
+        background-color: #0062b7;
+        display: flex;
+        flex-direction: column;
+        height: 150px;
+        max-width: 205px;
+        padding: 10px;
+        border-radius: 8px;;
+        align-items: center;
+        justify-content: space-evenly;
     }
 
     nav {

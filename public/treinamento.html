@@ -14,7 +14,7 @@
             <ul>
                 <li><a href="index.html">Início</a></li>
                 <li><a href="treinamento.html">Consulta</a></li>
-                <li><a href="colaboradores.html">colaboradores</a></li>
+                <li><a href="colaboradores.html">Colaboradores</a></li>
             </ul>
         </nav>
     </header>
@@ -58,14 +58,26 @@
             })
             .then(data => {
                 const resultadoDiv = document.getElementById('resultado');
+
+                let statusClass = '';
+                if (data[0].status === 'Pendente') {
+                    statusClass = 'status-pendente';
+                } else if (data[0].status === 'Vencido') {
+                    statusClass = 'status-vencido';
+                    const utterance = new SpeechSynthesisUtterance('treinamento vencido');
+                    window.speechSynthesis.speak(utterance);
+                } else if (data[0].status === 'Completo') {
+                    statusClass = 'status-concluido';
+                }
+
                 resultadoDiv.innerHTML = `
                     <p>Nome: ${data[0].nome}</p>
                     <p>Matrícula: ${data[0].matricula}</p>
                     <p>Cargo: ${data[0].cargo}</p>
-                    <p>Treinamento: ${data[0].nome_treinamento}</p>
+                    <p>Treinamento: ${data[0].nome_treinamentos}</p>
                     <p>Exigência: ${data[0].exigido_para_funcao}</p>
                     <p>Validade: ${data[0].validade_em_anos}</p>
-                    <p>Situação: ${data[0].status}</p>
+                    <p>Situação: <span class="${statusClass}">${data[0].status}</span></p>
                 `;
             })
             .catch(error => {
