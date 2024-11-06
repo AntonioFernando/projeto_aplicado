@@ -1,6 +1,9 @@
 const loginBtn = document.getElementById('loginBtn');
 const loginPopup = document.getElementById('loginPopup');
 const closeBtn = document.getElementsByClassName('close')[0];
+const apiUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:8000'  
+                : 'https://ccaipf.onrender.com';
 
 // Open the popup
 loginBtn.onclick = function() {
@@ -21,7 +24,7 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('http://localhost:8000/login', {
+    const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
