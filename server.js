@@ -5,13 +5,20 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const mysql = require('mysql');
 
-const app = express();
-const port = 8000;
 
-app.use(cors());
+const app = express();
+const port = process.env.PORT || 8000;
+
+const corsOptions = {
+    origin: ['http://localhost:3000', 'https://ccaipf.onrender.com'], // Permite localhost para desenvolvimento e o domínio de produção
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
-
+app.use(express.static(path.join(__dirname, 'imagens')));
 // Array to simulate users (normally from a database)
 const users = [];
 
@@ -144,3 +151,5 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
+
+console.log(path.join(__dirname, 'imagens'));

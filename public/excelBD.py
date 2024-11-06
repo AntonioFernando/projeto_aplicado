@@ -83,6 +83,9 @@ def atualizar_banco():
                     connection.commit()
                     print("Dados de colaborador_treinamentos inseridos no banco de dados.")
 
+            connection.commit()
+            print("Todas as alterações foram confirmadas no banco de dados.")
+
     except Error as e:
         print(f"Erro ao conectar ao MySQL: {e}")
 
