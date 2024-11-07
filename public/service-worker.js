@@ -2,7 +2,7 @@ const CACHE_NAME = 'pwa-cache-v1';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/treinemento.html',
+    '/treinamento.html',
     '/colaboradores.html',
     '/script.js',
     '/imagens/icon512px.png',
@@ -19,8 +19,20 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Arquivos em cache');
-                return cache.addAll(urlsToCache);
+                console.log('Arquivos em cache', urlsToCache);
+                return Promise.all(urlsToCache.map(url => {
+                    return fetch(url).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Falha ao buscar: ${url}`);
+                        }
+                        return cache.put(url, response);
+                    }).catch(error => {
+                        console.error(`Erro ao adicionar ao cache: ${url}`, error);
+                    });
+                }));
+            })
+            .catch(error => {
+                console.error('Falha ao abrir o cache:', error);
             })
     );
 });
@@ -54,3 +66,11 @@ self.addEventListener('fetch', event => {
             })
     );
 });
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(function(registration) {
+      console.log('Service Worker is active and ready:', registration);
+    }).catch(function(error) {
+      console.log('Service Worker registration failed:', error);
+    });
+  }

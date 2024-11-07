@@ -22,21 +22,23 @@ app.use(express.static(path.join(__dirname, 'imagens')));
 // Array to simulate users (normally from a database)
 const users = [];
 
-//base de dados 'colaboradores'
-const dbexemplo = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'mysql123',
-    database: 'colaboradores'
-});
-
+//base de dados 'BD_ferramenta_consulta' para hospedagem em nuvem
+const dbConfig = process.env.NODE_ENV === 'production' 
+    ? { // Conexão para ambiente de produção (Freesqldatabase)
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10743153',
+        password: '8m2eabBIEk',
+        database: 'sql10743153'
+    }
+    : {
+        host: 'localhost',
+        user: 'root',
+        password: 'mysql123',
+        database: 'BD_ferramenta_consulta'
+    };
+    
 //base de dados 'BD_ferramenta_consulta'
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'mysql123',
-    database: 'BD_ferramenta_consulta'
-});
+const db = mysql.createConnection(dbConfig);
 
 // gerencia erro ou sucesso da conexão com a base de dados.
 db.connect((err) => {
@@ -76,7 +78,7 @@ app.post('/buscar', (req, res) => {
 
     db.query(sql, values, (err, result) => {
         if (err) {
-            res.status(500);send('Erro ao buscar os dados');
+            res.status(500).send('Erro ao buscar os dados');
         } else {
             if (result.length > 0) {
                 res.json(result);

@@ -31,7 +31,7 @@ h1 {
     color: #0062b7;
     text-align: center;
     font-size: 110px;
-    font-family: fantasy;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-style:unset;
     margin-top: 40px;
 }
@@ -60,7 +60,7 @@ nav ul li {
 nav ul li a {
     color:rgb(211, 255, 248);
     text-decoration: none;
-    font-family: fantasy;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
     padding: 10px 15px;
     border-radius: 5px;
     transition: background-color 0.3s;
