@@ -35,6 +35,40 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+
+    try {
+        // Tenta login online primeiro
+        const response = await fetch(`${apiUrl}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+        });
+
+        console.log('Resposta do login online:', response);
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Resultado do login:', result);
+
+            const token = result.token;
+            console.log('Token recebido:', token);
+            localStorage.setItem('authToken', token);
+            navMenu.style.display = 'flex';
+            loginBtn.style.display = 'none';
+            loginPopup.style.display = 'none';
+            alert(result.message);
+            return;
+        } else {
+            alert('Usuário ou senha inválidos');
+        }
+    } catch (error) {
+        console.error('Erro de rede no login online:', error);
+        alert('Falha ao tentar logar online. Tentando login offline...');
+    }
+
+    // Se o login online falhar, tenta o login offline
     const storedToken = localStorage.getItem('authToken');
 
     if (storedToken) {
@@ -55,36 +89,9 @@ document.getElementById('loginForm').onsubmit = async function(event) {
             console.error('Erro ao decodificar token offline:', err);
         }
     }
-
-    try {
-        const response = await fetch(`${apiUrl}/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            const token = result.token;
-            console.log('Token recebido:', token);
-
-            localStorage.setItem('authToken', token);
-
-            navMenu.style.display = 'flex';
-            loginBtn.style.display = 'none';
-            loginPopup.style.display = 'none';
-            alert(result.message);
-        } else {
-            alert('Usuário ou senha inválidos.')
-        }
-    } catch (error) {
-        console.error('Erro de rede:', error);
-        alert('Falha ao tentar logar online e offline.');
-    }
 };
     
+// Função para fazer requisições autenticadas
 async function makeAuthenticatedRequest(url) {
     const token = localStorage.getItem('authToken');
     if (token) {
