@@ -1,6 +1,3 @@
-CREATE DATABASE pg_ferramenta_consulta;
-\c pg_ferramenta_consulta;
-
 -- Tabela Colaborador
 CREATE TABLE Colaborador (
     id SERIAL PRIMARY KEY,
