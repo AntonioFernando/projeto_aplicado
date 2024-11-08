@@ -28,12 +28,14 @@ const users = [];
 const dbConfig = process.env.NODE_ENV === 'production' 
     ? { // Conexão para ambiente de produção (Render)
         host: process.env.DB_HOST,
+        port: process.env.PORT,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME
     }
     : {
         host: 'localhost',
+        port: '5432',
         user: 'postgres',
         password: 'pg,123',
         database: 'pg_ferramenta_consulta'

@@ -41,15 +41,16 @@
     </main>
 
     <script>
+        // Defina a URL do backend conforme o ambiente
+        const isProduction = window.location.hostname === 'ccaipf.onrender.com'; // Verifica se está em produção
+        const baseUrl = isProduction ? 'https://ccaipf.onrender.com' : 'http://localhost:8000';
+    
         async function fetchColaboradores() {
-            const response = await fetch('http://localhost:8000/pg_ferramenta_consulta');
+            const response = await fetch(`${baseUrl}/pg_ferramenta_consulta`);
             const colaboradores = await response.json();
-
             const tableBody = document.querySelector('#colaboradoresTable tbody');
-            tableBody.innerHTML = ''; //Clear existing rows
-
-            const uniqueColaboradores = new Map(); // Use a map to filter duplicates
-
+            tableBody.innerHTML = ''; // Clear existing rows
+    
             colaboradores.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -64,9 +65,11 @@
                 tableBody.appendChild(row);
             });
         }
-        // fetch data when the page loads
+    
+        // Fetch data when the page loads
         window.onload = fetchColaboradores;
     </script>
+    
 
     <script src="script.js"></script>
 
