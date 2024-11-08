@@ -35,7 +35,7 @@ const dbConfig = process.env.NODE_ENV === 'production'
     }
     : {
         host: 'localhost',
-        port: process.env.DB_PORT || 5432,
+        port: 5432,
         user: 'postgres',
         password: 'pg,123',
         database: 'pg_ferramenta_consulta'
