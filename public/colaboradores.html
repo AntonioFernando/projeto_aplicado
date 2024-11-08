@@ -42,7 +42,7 @@
 
     <script>
         async function fetchColaboradores() {
-            const response = await fetch('http://localhost:8000/BD_ferramenta_consulta');
+            const response = await fetch('http://localhost:8000/pg_ferramenta_consulta');
             const colaboradores = await response.json();
 
             const tableBody = document.querySelector('#colaboradoresTable tbody');

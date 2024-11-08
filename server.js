@@ -1,9 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const mysql = require('mysql');
+const { Client } = require('pg');
+const jwt = require('jsonwebtoken');
 
 
 const app = express();
@@ -17,37 +19,33 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'imagens')));
-// Array to simulate users (normally from a database)
+
 const users = [];
 
-//base de dados 'BD_ferramenta_consulta' para hospedagem em nuvem
+//base de dados 'pg_ferramenta_consulta' para hospedagem em nuvem
 const dbConfig = process.env.NODE_ENV === 'production' 
-    ? { // Conexão para ambiente de produção (Freesqldatabase)
-        host: 'sql10.freesqldatabase.com',
-        user: 'sql10743153',
-        password: '8m2eabBIEk',
-        database: 'sql10743153'
+    ? { // Conexão para ambiente de produção (Render)
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
     }
     : {
         host: 'localhost',
-        user: 'root',
-        password: 'mysql123',
-        database: 'BD_ferramenta_consulta'
+        user: 'postgres',
+        password: 'pg,123',
+        database: 'pg_ferramenta_consulta'
     };
     
-//base de dados 'BD_ferramenta_consulta'
-const db = mysql.createConnection(dbConfig);
+//base de dados 'pg_ferramenta_consulta'
+const db = new Client(dbConfig);
 
 // gerencia erro ou sucesso da conexão com a base de dados.
-db.connect((err) => {
-    if (err) {
-        console.log('Erro ao conectar ao banco de dados:', err);
-    } else {
-        console.log('Conectado ao banco de dados MYSQL!');
-    }
-});
+db.connect()
+    .then(() => console.log('Conectado ao banco de dados PostgreSQL!'))
+    .catch((err) => console.error('Erro ao conectar ao banco de dados:', err));
 
 // procura colaboradores por nome ou matricula na base de dados do servidor.
 app.post('/buscar', (req, res) => {
@@ -68,7 +66,7 @@ app.post('/buscar', (req, res) => {
         LEFT JOIN 
             Treinamentos t ON ct.treinamentos_id = t.id
         WHERE 
-            c.nome LIKE ? OR c.matricula = ?;
+            c.nome LIKE $1 OR c.matricula = $2;
     `;
 
     const values = [
@@ -80,8 +78,8 @@ app.post('/buscar', (req, res) => {
         if (err) {
             res.status(500).send('Erro ao buscar os dados');
         } else {
-            if (result.length > 0) {
-                res.json(result);
+            if (result.rows.length > 0) {
+                res.json(result.rows);
             } else {
                 res.status(404).send('Funcionário não encontrado');
             }
@@ -93,7 +91,6 @@ app.post('/buscar', (req, res) => {
 async function createUser(username, password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     users.push({ username, password: hashedPassword });
-    console.log(`Usuário: ${username}, Senha hasheada: ${hashedPassword}`);
 }
 
 // Create example users
@@ -108,7 +105,8 @@ app.post('/login', async (req, res) => {
     const user = users.find(u => u.username === username);
 
     if (user && await bcrypt.compare(password, user.password)) {
-        res.json({ success: true, message: 'Login realizado com sucesso!' });
+        const token = jwt.sign({username: 'user' }, process.env.JWT_SECRET, { expiresIn: '12h'});
+        res.json({ success: true, message: 'Login realizado com sucesso!', token });
     } else {
         res.status(401).json({ success: false, message: 'Usuário ou senha inválidos.' });
     }
@@ -120,7 +118,7 @@ app.get('/', (req, res) => {
 });
 
 // solicita a lista de colaboradores para a base de dados no servidor local.
-app.get('/BD_ferramenta_consulta', (req, res) => {
+app.get('/pg_ferramenta_consulta', (req, res) => {
     const sql = `
         SELECT 
             c.nome, 
@@ -141,7 +139,7 @@ app.get('/BD_ferramenta_consulta', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Erro ao buscar os colaboradores' });
         }
-        res.json(result);
+        res.json(result.rows);
     });
 });
 
