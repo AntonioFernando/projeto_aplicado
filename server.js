@@ -151,7 +151,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-    console.log(`Servidor rodando em http://localhost:${port}`);
+    const host = process.env.NODE_ENV === 'production' ? 'https://ccaipf.onrender.com' : `http://localhost:${port}`;
+    console.log(`Servidor rodando em ${port}`);
 });
 
 console.log(path.join(__dirname, 'imagens'));
