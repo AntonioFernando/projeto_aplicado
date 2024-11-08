@@ -40,6 +40,9 @@ const dbConfig = process.env.NODE_ENV === 'production'
         password: 'pg,123',
         database: 'pg_ferramenta_consulta'
     };
+
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DB_HOST:', process.env.DB_HOST);
     
 //base de dados 'pg_ferramenta_consulta'
 const db = new Client(dbConfig);
@@ -152,7 +155,9 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
     const host = process.env.NODE_ENV === 'production' ? 'https://ccaipf.onrender.com' : `http://localhost:${port}`;
-    console.log(`Servidor rodando em ${port}`);
+    console.log(`Servidor rodando em ${host}`);
 });
 
 console.log(path.join(__dirname, 'imagens'));
+
+console.log(`Ambiente atual: ${process.env.NODE_ENV}`);
