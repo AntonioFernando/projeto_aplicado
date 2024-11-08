@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const { Client } = require('pg');
 const jwt = require('jsonwebtoken');
@@ -28,7 +28,6 @@ const users = [];
 const dbConfig = process.env.NODE_ENV === 'production' 
     ? { // Conexão para ambiente de produção (Render)
         host: process.env.DB_HOST,
-        port: process.env.DB_PORT || 5432,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME
@@ -106,7 +105,7 @@ app.post('/login', async (req, res) => {
     const user = users.find(u => u.username === username);
 
     if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({username: 'user' }, process.env.JWT_SECRET, { expiresIn: '5 min'});
+        const token = jwt.sign({username}, process.env.JWT_SECRET, { expiresIn: '5 min'});
         res.json({ success: true, message: 'Login realizado com sucesso!', token });
     } else {
         res.status(401).json({ success: false, message: 'Usuário ou senha inválidos.' });
