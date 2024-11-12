@@ -11,6 +11,7 @@ const urlsToCache = [
     '/imagens/icon96px.png',
     '/imagens/screenshot-wide.png',
     '/imagens/screenshot-mobile.png',
+    'imagens/fundo.jpg',
     '/manifest.json',
     '/service-worker.js'
 ];
@@ -63,10 +64,57 @@ self.addEventListener('fetch', event => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return fetch(event.request);
+
+                return fetch(event.request).then(response => {
+                    // Se a resposta for válida, armazene no IndexedDB
+                    if (event.request.url.includes('/api/')) {
+                        storeInIndexedDB(event.request, response.clone());
+                    }
+                    return response;
+                });
             })
     );
 });
+
+function storeInIndexedDB(request, response) {
+    const openRequest = indexedDB.open('appDataDB', 1);
+
+    openRequest.onupgradeneeded = function(e) {
+        const db = e.target.result;
+        const store = db.createObjectStore('apiResponses', { keyPath: 'url' });
+    };
+
+    openRequest.onsuccess = function(e) {
+        const db = e.target.result;
+        const transaction = db.transaction(['apiResponses'], 'readwrite');
+        const store = transaction.objectStore('apiResponses');
+        const data = {
+            url: request.url,
+            response: response
+        };
+        store.put(data);
+    };
+}
+
+function getFromIndexedDB(url) {
+    return new Promise((resolve, reject) => {
+        const openRequest = indexedDB.open('appDataDB', 1);
+
+        openRequest.onsuccess = function(e) {
+            const db = e.target.result;
+            const transaction = db.transaction(['apiResponses'], 'readonly');
+            const store = transaction.objectStore('apiResponses');
+            const request = store.get(url);
+
+            request.onsuccess = function() {
+                resolve(request.result ? request.result.response : null);
+            };
+            request.onerror = function() {
+                reject('Erro ao recuperar dados do IndexedDB');
+            };
+        };
+    });
+}
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(function(registration) {

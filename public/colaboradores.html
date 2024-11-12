@@ -44,13 +44,80 @@
         // Defina a URL do backend conforme o ambiente
         const isProduction = window.location.hostname === 'ccaipf.onrender.com'; // Verifica se está em produção
         const baseUrl = isProduction ? 'https://ccaipf.onrender.com' : 'http://localhost:8000';
-    
-        async function fetchColaboradores() {
-            const response = await fetch(`${baseUrl}/pg_ferramenta_consulta`);
-            const colaboradores = await response.json();
+
+        let db;
+
+        // Inicializa o IndexedDB
+        function initDB(callback) {
+            const request = indexedDB.open('consultaAppDB', 1);
+
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+
+                // Cria a store para colaboradores se ainda não existir
+                if (!db.objectStoreNames.contains('colaboradores')) {
+                    db.createObjectStore('colaboradores', { keyPath: 'matricula' });
+                }
+            };
+
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                console.log('IndexedDB inicializado com sucesso');
+                callback();
+            };
+
+            request.onerror = (event) => {
+                console.error('Erro ao inicializar IndexedDB:', event.target.errorCode);
+            };
+        }
+
+        // Função para salvar dados no IndexedDB
+        function salvarColaboradoresOffline(colaboradores) {
+            if (!db) return console.error('IndexedDB não está pronto.');
+
+            const transaction = db.transaction(['colaboradores'], 'readwrite');
+            const store = transaction.objectStore('colaboradores');
+
+            colaboradores.forEach(colaborador => {
+                store.put(colaborador); // `put` adiciona ou atualiza o colaborador
+            });
+
+            transaction.oncomplete = () => {
+                console.log('Dados dos colaboradores salvos no IndexedDB');
+            };
+
+            transaction.onerror = (event) => {
+                console.error('Erro ao salvar colaboradores no IndexedDB:', event.target.errorCode);
+            };
+        }
+
+        // Função para buscar dados do IndexedDB
+        function buscarColaboradoresOffline(callback) {
+            if (!db) return console.error('IndexedDB não está pronto.');
+
+            const transaction = db.transaction(['colaboradores'], 'readonly');
+            const store = transaction.objectStore('colaboradores');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                callback(request.result);
+            };
+
+            request.onerror = (event) => {
+                console.error('Erro ao buscar colaboradores no IndexedDB:', event.target.errorCode);
+            };
+        }
+
+        // Função para popular a tabela quando os dados são carregados offline
+        function popularTabelaOffline(colaboradores) {
             const tableBody = document.querySelector('#colaboradoresTable tbody');
-            tableBody.innerHTML = ''; // Clear existing rows
-    
+            tableBody.innerHTML = ''; // Limpar as linhas existentes
+
+            if (colaboradores.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7">Nenhum colaborador encontrado.</td></tr>';
+                return;
+            }
+
             colaboradores.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -65,6 +132,51 @@
                 tableBody.appendChild(row);
             });
         }
+
+        // Função para carregar dados do servidor ou do IndexedDB
+        function carregarDados() {
+            if (navigator.onLine) {
+            // Se online, buscar no servidor
+                fetchColaboradores();
+            } else {
+            // Se offline, buscar no IndexedDB
+                buscarColaboradoresOffline(popularTabelaOffline);
+            }
+        }
+    
+        async function fetchColaboradores() {
+            try {
+                const response = await fetch(`${baseUrl}/pg_ferramenta_consulta`);
+                const colaboradores = await response.json();
+                const tableBody = document.querySelector('#colaboradoresTable tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+    
+                colaboradores.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.nome}</td>
+                        <td>${item.matricula}</td>
+                        <td>${item.cargo}</td>
+                        <td>${item.nome_treinamentos}</td>
+                        <td>${item.exigido_para_funcao}</td>
+                        <td>${item.validade_em_anos}</td>
+                        <td>${item.status}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Salvar os dados no IndexedDB para uso offline
+                salvarColaboradoresOffline(colaboradores);
+            } catch (error) {
+                console.log('Erro ao buscar dados online. Tentando buscar offline...');
+                buscarColaboradoresOffline(popularTabelaOffline);
+            }   
+        }
+
+        // Inicializar o IndexedDB
+        initDB(() => {
+            carregarDados();
+        });
     
         // Fetch data when the page loads
         window.onload = fetchColaboradores;
