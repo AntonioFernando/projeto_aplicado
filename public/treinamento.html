@@ -37,29 +37,45 @@
 
     <div id="resultado"></div>
     <script>
+
+        const localUrl = 'http://localhost:8000';
+        const productionUrl = 'https://ccaipf.onrender.com';
+
         document.getElementById('formBusca').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const username = document.getElementById('username').value;
             const matricula = document.getElementById('matricula').value;
 
-            fetch('http://localhost:8000/buscar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, matricula })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Colaborador não encontrado');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const resultadoDiv = document.getElementById('resultado');
+            async function buscarColaborador(url) {
+                const response = await fetch(`${url}/buscar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, matricula })
+                });
 
+                if (!response.ok) throw new Error('Colaborador não encontrado');
+                return response.json();
+            }
+
+            buscarColaborador(localUrl)
+                .then(data => atualizarResultado(data))
+                .catch(() => {
+                    console.warn('Servidor local indisponível, tentando o servidor externo...');
+                    return buscarColaborador(productionUrl)
+                        .then(data => atualizarResultado(data))
+                        .catch(error => {
+                            document.getElementById('resultado').innerHTML = `<p>${error.message}</p>`;
+                        });
+                })
+        });
+
+        function atualizarResultado(data) {
+                const resultadoDiv = document.getElementById('resultado');
                 let statusClass = '';
+
                 if (data[0].status === 'Pendente') {
                     statusClass = 'status-pendente';
                 } else if (data[0].status === 'Vencido') {
@@ -79,11 +95,7 @@
                     <p>Validade: ${data[0].validade_em_anos}</p>
                     <p>Situação: <span class="${statusClass}">${data[0].status}</span></p>
                 `;
-            })
-            .catch(error => {
-                document.getElementById('resultado').innerHTML = `<p>${error.message}</p>`;
-            });
-        });
+            }
     </script>
     <script src="script.js"></script>
 </body> 
