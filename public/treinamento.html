@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Http Project</title>
+    <title>Treinamento</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body onload="initDB()">
@@ -38,90 +38,93 @@
     <div id="resultado"></div>
 
     <script>
-
         let db;
-
+    
         // Inicializa o IndexedDB
         function initDB() {
             const request = indexedDB.open('consultaAppDB', 1);
-
+    
             request.onupgradeneeded = (event) => {
                 db = event.target.result;
-
+    
                 // Cria uma store para colaboradores se ainda não existir
                 if (!db.objectStoreNames.contains('colaboradores')) {
-                    db.createObjectStore('colaboradores', { keyPath: 'matricula' });
+                    const store = db.createObjectStore('colaboradores', { keyPath: 'matricula' });
                 }
             };
-
+    
             request.onsuccess = (event) => {
                 db = event.target.result;
                 console.log('IndexedDB inicializado com sucesso');
             };
-
+    
             request.onerror = (event) => {
                 console.error('Erro ao inicializar IndexedDB:', event.target.errorCode);
             };
         }
-
+    
         function salvarColaboradoresOffline(colaboradores) {
             if (!db) return console.error('IndexedDB não está pronto.');
-
+    
             const transaction = db.transaction(['colaboradores'], 'readwrite');
             const store = transaction.objectStore('colaboradores');
-
+    
             colaboradores.forEach(colaborador => {
                 store.put(colaborador); // `put` adiciona ou atualiza o colaborador
             });
-
+    
             transaction.oncomplete = () => {
                 console.log('Dados dos colaboradores salvos no IndexedDB');
             };
-
+    
             transaction.onerror = (event) => {
                 console.error('Erro ao salvar colaboradores no IndexedDB:', event.target.errorCode);
             };
         }
-
-        function buscarColaboradoresOffline(callback) {
+    
+        function buscarColaboradoresOffline(matricula, callback) {
             if (!db) return console.error('IndexedDB não está pronto.');
-
+    
             const transaction = db.transaction(['colaboradores'], 'readonly');
             const store = transaction.objectStore('colaboradores');
-            const request = store.getAll();
-
+            const request = store.get(matricula);
+    
             request.onsuccess = () => {
-                callback(request.result);
+                callback(request.result ? [request.result] : []);
             };
-
+    
             request.onerror = (event) => {
                 console.error('Erro ao buscar colaboradores no IndexedDB:', event.target.errorCode);
             };
         }
-
-        
-
+    
         document.getElementById('formBusca').addEventListener('submit', function (e) {
             e.preventDefault();
-
+    
             const username = document.getElementById('username').value;
             const matricula = document.getElementById('matricula').value;
-
-            const localUrl = 'http://localhost:8000';
-            const productionUrl = 'https://ccaipf.onrender.com';
-
-            buscarColaborador(localUrl)
-                .then(data => atualizarResultado(data))
-                .catch(() => {
-                    console.warn('Servidor local indisponível, tentando o servidor externo...');
-                    return buscarColaborador(productionUrl)
+    
+            // Primeiro, tenta buscar no IndexedDB
+            buscarColaboradoresOffline(matricula, (offlineData) => {
+                if (offlineData && offlineData.length > 0) {
+                    atualizarResultado(offlineData); // Exibe dados do IndexedDB
+                } else {
+                    // Se não encontrar no IndexedDB, tenta buscar no servidor local
+                    buscarColaborador('http://localhost:8000')
                         .then(data => atualizarResultado(data))
                         .catch(() => {
-                            console.warn('Servidor externo também indisponível. Usando dados offline...');
-                            buscarColaboradoresOffline(atualizarResultado);
+                            console.warn('Servidor local indisponível, tentando o servidor externo...');
+                            // Se o servidor local falhar, tenta o servidor externo
+                            return buscarColaborador('https://ccaipf.onrender.com')
+                                .then(data => atualizarResultado(data))
+                                .catch(() => {
+                                    console.warn('Servidor externo também indisponível. Nenhum dado encontrado.');
+                                    atualizarResultado([]); // Mostra mensagem de erro ao usuário
+                                });
                         });
-                });
-
+                }
+            });
+    
             async function buscarColaborador(url) {
                 try {
                     const response = await fetch(`${url}/buscar`, {
@@ -131,9 +134,9 @@
                         },
                         body: JSON.stringify({ username, matricula })
                     });
-
+    
                     if (!response.ok) throw new Error('Colaborador não encontrado');
-
+    
                     const data = await response.json();
                     salvarColaboradoresOffline(data); // Salva os dados no IndexedDB para uso offline
                     return data;
@@ -142,16 +145,16 @@
                 }
             }
         });
-
+    
         function atualizarResultado(data) {
             const resultadoDiv = document.getElementById('resultado');
             let statusClass = '';
-
+    
             if (data.length === 0) {
                 resultadoDiv.innerHTML = '<p>Colaborador não encontrado.</p>';
                 return;
-            }           
-
+            }
+    
             if (data[0].status === 'Pendente') {
                 statusClass = 'status-pendente';
             } else if (data[0].status === 'Vencido') {
@@ -161,7 +164,7 @@
             } else if (data[0].status === 'Completo') {
                 statusClass = 'status-concluido';
             }
-
+    
             resultadoDiv.innerHTML = `
                 <p>Nome: ${data[0].nome}</p>
                 <p>Matrícula: ${data[0].matricula}</p>
@@ -172,6 +175,9 @@
                 <p>Situação: <span class="${statusClass}">${data[0].status}</span></p>
             `;
         }
+    
+        // Inicializa o IndexedDB ao carregar a página
+        initDB();
     </script>
     <script src="script.js"></script>
 </body> 
