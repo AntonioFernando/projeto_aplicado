@@ -13,8 +13,30 @@ if ('serviceWorker' in navigator) {
         .catch(error => console.log('Service Worker registration failed:', error));
 }
 
+async function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('consultaAppDB', 1);
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('colaboradores')) {
+                db.createObjectStore('colaboradores', { keyPath: 'matricula' });
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            resolve();
+        };
+
+        request.onerror = (event) => {
+            reject('Erro ao inicializar o IndexedDB');
+        };
+    });
+}
+
 // Check token on page load to update UI state
-window.onload = function() {
+window.onload = async function () {
     const storedToken = localStorage.getItem('authToken');
     if (storedToken) {
         try {
@@ -34,6 +56,13 @@ window.onload = function() {
             console.error('Erro ao decodificar token:', err);
         }
     }
+
+    // Inicializa o IndexedDB e sincroniza os colaboradores
+    await initDB();
+    sincronizarColaboradores();
+
+    // Reseta o timer de inatividade
+    resetInactivityTimer();
 };
 
 // Open the popup
@@ -56,53 +85,94 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     const password = document.getElementById('password').value;
 
     try {
-        // Attempt online login first
-        const response = await fetch(`${apiUrl}/login`, {
+        // Tentativa de login no servidor local primeiro
+        const localLoginResponse = await fetch(`${apiUrl}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
 
-        if (response.ok) {
-            const result = await response.json();
+        if (localLoginResponse.ok) {
+            const result = await localLoginResponse.json();
             const token = result.token;
 
-            localStorage.setItem('authToken', token);
-            navMenu.style.display = 'flex';
-            loginBtn.style.display = 'none';
-            loginPopup.style.display = 'none';
-            alert(result.message);
-
-            // Optionally, save user data to IndexedDB
-            await salvarDadosOffline(result.userData);
-
-            return;
-        } else {
-            alert('Usuário ou senha inválidos');
-        }
-    } catch (error) {
-        console.error('Erro de rede no login online:', error);
-        alert('Falha ao tentar logar online. Tentando login offline...');
-    }
-
-    // Offline login attempt
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-        try {
-            const decoded = jwt_decode(storedToken);
-            const currentTime = Math.floor(Date.now() / 1000);
-
-            if (decoded.exp > currentTime) {
-                alert('Login realizado offline!');
+            if (token) {
+                // Se o token é válido, armazena e encerra a tentativa de login
+                localStorage.setItem('authToken', token);
                 navMenu.style.display = 'flex';
                 loginBtn.style.display = 'none';
                 loginPopup.style.display = 'none';
+                alert(result.message);
+                
+                await initDB();
+                await salvarDadosOffline(result.userData);
                 return;
             } else {
-                alert('Token expirado. Por favor, faça login online.');
+                alert('Usuário ou senha inválidos');
+                return;
             }
-        } catch (err) {
-            console.error('Erro ao decodificar token offline:', err);
+        } else {
+            // Caso o login no servidor local falhe, tentamos o servidor externo
+            console.warn('Servidor local não acessível, tentando servidor externo...');
+
+            const externalLoginResponse = await fetch(`${externalApiUrl}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (externalLoginResponse.ok) {
+                const result = await externalLoginResponse.json();
+                const token = result.token;
+
+                if (token) {
+                    // Se o token for válido, armazene-o e finalize a tentativa de login
+                    localStorage.setItem('authToken', token);
+                    navMenu.style.display = 'flex';
+                    loginBtn.style.display = 'none';
+                    loginPopup.style.display = 'none';
+                    alert(result.message);
+                    
+                    await initDB();
+                    await salvarDadosOffline(result.userData);
+                    return;
+                } else {
+                    alert('Usuário ou senha inválidos');
+                    return;
+                }
+            } else {
+                // Caso o login também falhe no servidor externo, mostramos um erro
+                alert('Falha ao tentar logar online. Ambos os servidores estão inacessíveis.');
+                return;
+            }
+        }
+    } catch (error) {
+        // Se houve erro de rede (ambos os servidores inacessíveis)
+        console.error('Erro de rede no login online:', error);
+        alert('Falha ao tentar logar online. Ambos os servidores estão inacessíveis.');
+        
+        // Tentando login offline agora
+        const storedToken = localStorage.getItem('authToken');
+        if (storedToken) {
+            try {
+                const decoded = jwt_decode(storedToken);
+                const currentTime = Math.floor(Date.now() / 1000);
+
+                if (decoded.exp > currentTime) {
+                    alert('Login realizado offline!');
+                    navMenu.style.display = 'flex';
+                    loginBtn.style.display = 'none';
+                    loginPopup.style.display = 'none';
+                    return;
+                } else {
+                    alert('Token expirado. Por favor, faça login online.');
+                }
+            } catch (err) {
+                console.error('Erro ao decodificar token offline:', err);
+                alert('Token inválido ou corrompido.');
+            }
+        } else {
+            alert('Nenhum token encontrado, por favor, faça login online.');
         }
     }
 };
@@ -151,12 +221,6 @@ function sincronizarColaboradores() {
         });
 }
 
-// Chama sincronização sempre que o app carrega
-window.onload = function () {
-    initDB();
-    sincronizarColaboradores();
-};
-
 let inactivityTimer;
 
 function resetInactivityTimer() {
@@ -168,7 +232,6 @@ function resetInactivityTimer() {
 }
 
 // Adiciona event listeners para resetar o timer quando o usuário interagir com a página
-window.onload = resetInactivityTimer;
 document.onmousemove = resetInactivityTimer;
 document.onkeydown = resetInactivityTimer;
 document.onclick = resetInactivityTimer;

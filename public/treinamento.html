@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +6,7 @@
     <title>Treinamento</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body onload="initDB()">
+<body>
     <header>
         <h1>Consulta</h1>
         <nav id="navMenu">
@@ -24,14 +23,14 @@
     <div class="signin-container">
         <form id="formBusca">
             <div class="input-group">
-                <label for="username">funcionário</label>
+                <label for="username">Funcionário</label>
                 <input type="text" id="username" name="username">
             </div>
             <div class="input-group">
-                <label for="matricula">matrícula</label>
+                <label for="matricula">Matrícula</label>
                 <input type="number" id="matricula" name="matricula">
             </div>
-            <button type="submit">procurar</button>
+            <button type="submit">Procurar</button>
         </form>
     </div>
 
@@ -39,92 +38,115 @@
 
     <script>
         let db;
-    
+
         // Inicializa o IndexedDB
-        function initDB() {
-            const request = indexedDB.open('consultaAppDB', 1);
-    
-            request.onupgradeneeded = (event) => {
-                db = event.target.result;
-    
-                // Cria uma store para colaboradores se ainda não existir
-                if (!db.objectStoreNames.contains('colaboradores')) {
-                    const store = db.createObjectStore('colaboradores', { keyPath: 'matricula' });
-                }
-            };
-    
-            request.onsuccess = (event) => {
-                db = event.target.result;
-                console.log('IndexedDB inicializado com sucesso');
-            };
-    
-            request.onerror = (event) => {
-                console.error('Erro ao inicializar IndexedDB:', event.target.errorCode);
-            };
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('consultaAppDB', 1);
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains('colaboradores')) {
+                        const store = db.createObjectStore('colaboradores', { keyPath: 'matricula' });
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log('IndexedDB inicializado com sucesso');
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    console.error('Erro ao inicializar IndexedDB:', event.target.errorCode);
+                    reject(new Error('Erro ao inicializar o IndexedDB'));
+                };
+            });
         }
-    
+
+        // Função para salvar colaboradores no IndexedDB
         function salvarColaboradoresOffline(colaboradores) {
             if (!db) return console.error('IndexedDB não está pronto.');
-    
+        
             const transaction = db.transaction(['colaboradores'], 'readwrite');
             const store = transaction.objectStore('colaboradores');
-    
+        
             colaboradores.forEach(colaborador => {
-                store.put(colaborador); // `put` adiciona ou atualiza o colaborador
+                store.put(colaborador);
             });
-    
+        
             transaction.oncomplete = () => {
                 console.log('Dados dos colaboradores salvos no IndexedDB');
             };
-    
+        
             transaction.onerror = (event) => {
                 console.error('Erro ao salvar colaboradores no IndexedDB:', event.target.errorCode);
             };
         }
-    
-        function buscarColaboradoresOffline(matricula, callback) {
+
+        // Função para buscar colaboradores no IndexedDB
+        function buscarColaboradoresOffline(matricula, nome, callback) {
             if (!db) return console.error('IndexedDB não está pronto.');
-    
+        
             const transaction = db.transaction(['colaboradores'], 'readonly');
             const store = transaction.objectStore('colaboradores');
-            const request = store.get(matricula);
-    
-            request.onsuccess = () => {
-                callback(request.result ? [request.result] : []);
-            };
-    
-            request.onerror = (event) => {
+        
+            if (matricula) {
+                const request = store.get(matricula);
+                request.onsuccess = () => {
+                    callback(request.result ? [request.result] : []);
+                };
+            } else if (nome) {
+                const request = store.openCursor();
+                const results = [];
+                request.onsuccess = function(event) {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        if (cursor.value.nome.toLowerCase().includes(nome.toLowerCase())) {
+                            results.push(cursor.value);
+                        }
+                        cursor.continue();
+                    } else {
+                        callback(results);
+                    }
+                };
+            }
+
+            transaction.onerror = (event) => {
                 console.error('Erro ao buscar colaboradores no IndexedDB:', event.target.errorCode);
             };
         }
-    
-        document.getElementById('formBusca').addEventListener('submit', function (e) {
+
+        // Ouvinte para o formulário de busca
+        document.getElementById('formBusca').addEventListener('submit', async function (e) {
             e.preventDefault();
-    
+
+            // Certifique-se de que o IndexedDB esteja inicializado antes de fazer a busca
+            await initDB();
+
             const username = document.getElementById('username').value;
             const matricula = document.getElementById('matricula').value;
-    
-            // Primeiro, tenta buscar no IndexedDB
-            buscarColaboradoresOffline(matricula, (offlineData) => {
+            
+            // Tenta buscar dados offline
+            buscarColaboradoresOffline(matricula, username, (offlineData) => {
                 if (offlineData && offlineData.length > 0) {
                     atualizarResultado(offlineData); // Exibe dados do IndexedDB
                 } else {
-                    // Se não encontrar no IndexedDB, tenta buscar no servidor local
+                    // Se não encontrar no IndexedDB, tenta buscar no servidor
                     buscarColaborador('http://localhost:8000')
                         .then(data => atualizarResultado(data))
                         .catch(() => {
                             console.warn('Servidor local indisponível, tentando o servidor externo...');
-                            // Se o servidor local falhar, tenta o servidor externo
                             return buscarColaborador('https://ccaipf.onrender.com')
                                 .then(data => atualizarResultado(data))
                                 .catch(() => {
                                     console.warn('Servidor externo também indisponível. Nenhum dado encontrado.');
-                                    atualizarResultado([]); // Mostra mensagem de erro ao usuário
+                                    atualizarResultado([]); // Mostra mensagem de erro
                                 });
                         });
                 }
             });
-    
+
             async function buscarColaborador(url) {
                 try {
                     const response = await fetch(`${url}/buscar`, {
@@ -134,27 +156,28 @@
                         },
                         body: JSON.stringify({ username, matricula })
                     });
-    
+
                     if (!response.ok) throw new Error('Colaborador não encontrado');
-    
+
                     const data = await response.json();
-                    salvarColaboradoresOffline(data); // Salva os dados no IndexedDB para uso offline
+                    salvarColaboradoresOffline(data); // Salva os dados no IndexedDB
                     return data;
                 } catch (error) {
                     throw new Error('Falha ao buscar no servidor');
                 }
             }
         });
-    
+
+        // Função para exibir o resultado da busca
         function atualizarResultado(data) {
             const resultadoDiv = document.getElementById('resultado');
             let statusClass = '';
-    
+
             if (data.length === 0) {
                 resultadoDiv.innerHTML = '<p>Colaborador não encontrado.</p>';
                 return;
             }
-    
+
             if (data[0].status === 'Pendente') {
                 statusClass = 'status-pendente';
             } else if (data[0].status === 'Vencido') {
@@ -164,7 +187,7 @@
             } else if (data[0].status === 'Completo') {
                 statusClass = 'status-concluido';
             }
-    
+
             resultadoDiv.innerHTML = `
                 <p>Nome: ${data[0].nome}</p>
                 <p>Matrícula: ${data[0].matricula}</p>
@@ -175,10 +198,12 @@
                 <p>Situação: <span class="${statusClass}">${data[0].status}</span></p>
             `;
         }
-    
+
         // Inicializa o IndexedDB ao carregar a página
-        initDB();
+        window.onload = async function() {
+            await initDB();
+        };
     </script>
     <script src="script.js"></script>
 </body> 
-</html>  
+</html>
