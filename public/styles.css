@@ -1,16 +1,17 @@
-body {
+html, body {
     background-image: url('imagens/fundo.jpg');
     background-repeat: no-repeat;
     background-size: cover; /* Ajuste automático */
     background-position: center; /* Centraliza a imagem */
     width: 100%;
-    height: 100vh;
-    background-color: rgb(184, 255, 255);
-    font-family: Arial, Helvetica, sans-serif;
-    display:flex;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #0062b7;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin: 0;
 }
 
 header {
@@ -20,16 +21,15 @@ header {
 }
 
 ::selection {
-    background-color: #ff7b00; /* Cor de fundo da seleção */
+    background-color: rgb(255, 103, 103); /* Cor de fundo da seleção */
     color: #ffffff; /* Cor do texto selecionado */
 }
-
 
 p {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
     text-align: center;
-    color: #032e54;
+    color: rgb(211, 255, 248);
     margin-bottom: 30px;
 }
 
@@ -38,7 +38,7 @@ h1 {
     text-align: center;
     font-size: 110px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-style:unset;
+    font-style: unset;
     margin-top: 40px;
     display: flex;
     text-shadow: 2px 0 rgb(211, 255, 248), -2px 0 rgb(211, 255, 248), 0 2px rgb(211, 255, 248), 0 -2px rgb(211, 255, 248),
@@ -48,7 +48,7 @@ h1 {
 #navMenu {
     background-color: #0062b7;
     padding: 15px;
-    width:fit-content;
+    width: fit-content;
     display: flex;
     justify-content: center;
     border: 1px solid #0062b7;
@@ -67,7 +67,7 @@ nav ul li {
 }
 
 nav ul li a {
-    color:rgb(211, 255, 248);
+    color: rgb(211, 255, 248);
     text-decoration: none;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     padding: 10px 15px;
@@ -82,25 +82,33 @@ nav ul li a:hover {
 
 #tableDiv {
     width: 100%;
-    overflow-x: auto;
+    max-height: 100vh; /* Limita a altura da tabela à altura da tela */
+    overflow-y: auto;  /* Adiciona a rolagem vertical se necessário */
     display: block;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
-#loginBtn, #buttonPopup {
-    width: 100%;
-    color: rgb(211, 255, 248);
-    padding: 10px;
+#loginBtn {
+    color: #0062b7;
+    text-align: center;
+    font-size: 80px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-style: unset;
+    margin-top: 40px;
+    display: flex;
+    text-shadow: 2px 0 rgb(211, 255, 248), -2px 0 rgb(211, 255, 248), 0 2px rgb(211, 255, 248), 0 -2px rgb(211, 255, 248),
+    1px 1px rgb(211, 255, 248), -1px -1px rgb(211, 255, 248), 1px -1px rgb(211, 255, 248), -1px 1px rgb(211, 255, 248);
     border: none;
-    background-color: #0062b7;
-    border-radius: 4px;
+    background-color: transparent;
+    font-weight: bold;
     cursor: pointer;
-    margin-top: 5px;
-    margin-bottom: 10px; 
+    padding: 0;
+    text-transform: uppercase;
 }
 
-#loginBtn:hover, #buttonPopup:hover {
-    background-color: rgb(255, 103, 103);
-    color: #032e54;
+#loginBtn:hover {
+    color: rgb(255, 103, 103);
 }
 
 #buttonPopup {
@@ -116,7 +124,7 @@ nav ul li a:hover {
 }
 
 #buttonPopup:hover {
-    background-color: #ff7b00;
+    background-color: rgb(255, 103, 103);
     color: #032e54;
 }
 
@@ -139,7 +147,6 @@ nav ul li a:hover {
     color: #032e54;
     margin-bottom: 10px;
 }
-
 
 label {
     display: block;
@@ -187,17 +194,20 @@ label {
 
 .input-group {
     align-items: center;
-    
     color: rgb(51, 219, 219);
     margin-bottom: 10px;
 }
 
 .status-pendente {
+    font-weight: bold;
+    animation: piscar-pendente 1.5s infinite alternate;
     color: rgb(191, 159, 0);
     font-weight: bold;
 }
 
 .status-vencido {
+    font-weight: bold;
+    animation: piscar-vencido 1.5s infinite alternate;
     color: rgb(234, 86, 0);
     font-weight: bold;
 }
@@ -207,10 +217,35 @@ label {
     font-weight: bold;
 }
 
+@keyframes piscar-pendente {
+    0% {
+        color: rgb(191, 159, 0);  /* Cor original (amarelo escuro) */
+    }
+    50% {
+        color: rgb(255, 255, 0);  /* Cor amarela */
+    }
+    100% {
+        color: rgb(191, 159, 0);  /* Cor original (amarelo escuro) */
+    }
+}
+
+@keyframes piscar-vencido {
+    0% {
+        color: rgb(255, 0, 0);  /* Cor original (laranja) */
+    }
+    50% {
+        color: rgb(255, 255, 255);  /* Cor vermelha */
+    }
+    100% {
+        color: rgb(255, 0, 0);  /* Cor original (laranja) */
+    }
+}
+
 table {
     width: 80%;
-    border-collapse: collapse; 
+    border-collapse: collapse;
     table-layout: auto;
+    background-color: rgb(211, 255, 248);
 }
 
 th {
@@ -228,6 +263,7 @@ th {
     background-color: #347fc0;
 }
 
+/* Responsividade para telas pequenas */
 @media (max-width: 768px) and (min-width: 250px) {
     h1 {
         font-size: 60px;
@@ -260,10 +296,25 @@ th {
         margin:  10px 0;
     }
 
+    #tableDiv {
+        width: 100%;
+        max-height: 55vh; /* Menor altura para telas menores */
+    }
+
     table {
         width: 100%;
+    }
+
+    th, td {
+        font-size: 0.9em;
+    }
+
+    table {
+        width: 100%;
+        height: 80%;
         overflow-x: auto;
         table-layout: auto;
+        background-color: rgb(211, 255, 248);
     }
 
     th, td {
@@ -277,6 +328,7 @@ th {
     }
 }
 
+
 @media (max-width: 480px) {
     h1 {
         font-size: 40px;
@@ -289,7 +341,7 @@ th {
         height: 150px;
         max-width: 205px;
         padding: 10px;
-        border-radius: 8px;;
+        border-radius: 8px;
         align-items: center;
         justify-content: space-evenly;
     }
@@ -306,26 +358,11 @@ th {
 
     #colaboradoresTable, #colaboradoresTable thead, #colaboradoresTable tbody, #colaboradoresTable th, #colaboradoresTable td, #colaboradoresTable tr {
         display: block;
+        height: auto; /* Remove a altura fixa */
     }
 
     #colaboradoresTable tr {
         margin-bottom: 10px;
-        border-bottom: 2px solid #ddd;
-    }
-
-    #colaboradoresTable td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-    }
-
-    #colaboradoresTable td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        width: 45%;
-        padding-left: 10px;
-        font-weight: bold;
-        text-align: left;
+        border-bottom: 2px solid #ddd
     }
 }
