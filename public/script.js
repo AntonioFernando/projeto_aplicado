@@ -65,13 +65,11 @@ window.onload = async function () {
     resetInactivityTimer();
 };
 
-// Open the popup
 loginBtn.onclick = function() {
     loginPopup.style.display = 'flex';
     loginBtn.style.display = 'none';
 }
 
-// Close the popup
 closeBtn.onclick = function() {
     loginPopup.style.display = 'none';
     loginBtn.style.display = 'flex';
@@ -209,17 +207,39 @@ async function makeAuthenticatedRequest(url) {
 }
 
 function sincronizarColaboradores() {
-    buscarColaborador('http://localhost:8000')
-        .then(data => salvarColaboradoresOffline(data))
+    // Tenta sincronizar com o servidor local primeiro
+    fetch('http://localhost:8000/pg_ferramenta_consulta')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Servidor local não acessível');
+            }
+            return response.json();
+        })
+        .then(data => {
+            salvarColaboradoresOffline(data);  // Salva no IndexedDB ou processa conforme necessário
+            console.log('Dados sincronizados com o banco local.');
+        })
         .catch(() => {
-            console.warn('Servidor local indisponível, tentando o servidor externo...');
+            console.warn('Servidor local não disponível, tentando o servidor externo...');
             return buscarColaborador('https://ccaipf.onrender.com')
-                .then(data => salvarColaboradoresOffline(data))
+                .then(data => {
+                    salvarColaboradoresOffline(data);
+                    console.log('Dados sincronizados com o servidor externo.');
+                })
                 .catch(() => {
                     console.warn('Nenhum servidor disponível para sincronização.');
+                    // Aqui você pode buscar dados no IndexedDB como fallback
+                    buscarColaboradoresOffline().then(colaboradores => {
+                        if (colaboradores.length > 0) {
+                            console.log('Dados carregados do IndexedDB');
+                        } else {
+                            console.warn('Nenhum dado encontrado no IndexedDB.');
+                        }
+                    });
                 });
         });
 }
+
 
 let inactivityTimer;
 
