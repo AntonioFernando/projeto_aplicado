@@ -21,7 +21,6 @@ db_config_render = {
     'port': 5432  # Porta padrão do PostgreSQL
 }
 
-sqlite3_db_path = "C:/Users/aflms/projeto_aplicado-web-server/public/ferramenta_consulta_SQLite.db"
 
 valores_status_permitidos = ['Ativo', 'Inativo']
 
@@ -30,8 +29,7 @@ def atualizar_banco():
     cursor_local = None
     connection_render = None
     cursor_render = None
-    connection_sqlite = None
-    cursor_sqlite = None
+    
 
     try:
         # Conexão com o banco de dados local
@@ -44,10 +42,7 @@ def atualizar_banco():
         cursor_render = connection_render.cursor()
         print("Conexão ao Postgre (Render) bem-sucedida.")
 
-        # Conexão com o banco de dados SQLite
-        connection_sqlite = sqlite3.connect(sqlite3_db_path)
-        cursor_sqlite = connection_sqlite.cursor()
-        print("Conexão ao SQLite bem-sucedida.")
+        
 
         # Ler o arquivo Excel
         df_colaborador = pd.read_excel("C:/Users/aflms/projeto_aplicado-web-server/public/colaborador.xlsx", engine='openpyxl')
@@ -73,13 +68,7 @@ def atualizar_banco():
                     DO UPDATE SET nome = EXCLUDED.nome, cargo = EXCLUDED.cargo
                 """, (row['nome'], row['matricula'], row['cargo']))
 
-                # Banco sqlite
-                cursor_sqlite.execute("""
-                    INSERT INTO Colaborador (nome, matricula, cargo)
-                    VALUES (?, ?, ?)
-                    ON CONFLICT (matricula) 
-                    DO UPDATE SET nome = excluded.nome, cargo = excluded.cargo
-                """, (row['nome'], row['matricula'], row['cargo']))
+                
 
             except Exception as e:
                 print(f"Erro ao inserir colaborador {row['nome']}: {e}")
@@ -91,9 +80,7 @@ def atualizar_banco():
                 cursor_render.execute("SELECT setval('colaborador_id_seq', (SELECT MAX(id) FROM Colaborador), false);")
                 connection_render.commit()
 
-                # Se ocorrer um erro, corrigir a sequência no banco sqlite
-                cursor_sqlite.execute("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM Colaborador) WHERE name = 'Colaborador';")
-                connection_sqlite.commit()
+                
 
         # Repetir as operações de inserção/atualização para os outros dados
         for _, row in df_treinamentos.iterrows():
@@ -135,23 +122,7 @@ def atualizar_banco():
                     VALUES (%s, %s, %s, %s)
                 """, (row['nome_treinamentos'], row['exigido_para_funcao'], row['validade_em_anos'], row['status']))
 
-            # Banco SQLite
-            cursor_sqlite.execute("""
-                SELECT id FROM Treinamentos WHERE nome_treinamentos = ? AND exigido_para_funcao = ?
-            """, (row['nome_treinamentos'], row['exigido_para_funcao']))
-            existing_record_sqlite = cursor_sqlite.fetchone()
-
-            if existing_record_sqlite:
-                cursor_sqlite.execute("""
-                    UPDATE Treinamentos SET nome_treinamentos = ?, exigido_para_funcao = ?, 
-                    validade_em_anos = ?, status = ? WHERE id = ?
-                """, (row['nome_treinamentos'], row['exigido_para_funcao'], row['validade_em_anos'], row['status'], existing_record_sqlite[0]))
-            else:
-                cursor_sqlite.execute("""
-                    INSERT INTO Treinamentos (nome_treinamentos, exigido_para_funcao, validade_em_anos, status)
-                    VALUES (?, ?, ?, ?)
-                """, (row['nome_treinamentos'], row['exigido_para_funcao'], row['validade_em_anos'], row['status']))
-
+           
         for _, row in df_colaborador_treinamentos.iterrows():
 
             # Verificar e converter 'data_conclusao' para string
@@ -198,26 +169,12 @@ def atualizar_banco():
                     VALUES (%s, %s, %s, %s, %s)
                 """, (row['colaborador_id'], row['treinamentos_id'], data_conclusao, validade, row['status']))
 
-            # Banco SQLite
-            cursor_sqlite.execute("""
-                SELECT id FROM Colaborador_Treinamentos WHERE colaborador_id = ? AND treinamentos_id = ?
-            """, (row['colaborador_id'], row['treinamentos_id']))
-            existing_record_sqlite = cursor_sqlite.fetchone()
-
-            if existing_record_sqlite:
-                cursor_sqlite.execute("""
-                    UPDATE Colaborador_Treinamentos SET data_conclusao = ?, validade = ?, status = ? WHERE id = ?
-                """, (data_conclusao, validade, row['status'], existing_record_sqlite[0]))
-            else:
-                cursor_sqlite.execute("""
-                    INSERT INTO Colaborador_Treinamentos (colaborador_id, treinamentos_id, data_conclusao, validade, status)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (row['colaborador_id'], row['treinamentos_id'], data_conclusao, validade, row['status']))
+            
 
         # Commit nas transações
         connection_local.commit()
         connection_render.commit()
-        connection_sqlite.commit()
+        
         print("Todas as alterações foram confirmadas nos bancos de dados.")
 
     except Error as e:
@@ -236,11 +193,7 @@ def atualizar_banco():
             connection_render.close()
             print("Conexão com Postgre (Render) fechada.")
 
-        if cursor_sqlite is not None:
-            cursor_sqlite.close()
-        if connection_sqlite is not None:
-            connection_sqlite.close()
-            print("Conexão com sqlite fechada.")
+        
 
 # Chama a função de atualização
 atualizar_banco()

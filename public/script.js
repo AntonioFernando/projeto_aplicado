@@ -92,7 +92,10 @@ document.getElementById('loginForm').onsubmit = async function(event) {
             body: JSON.stringify({ username, password }),
         });
 
-        if (localLoginResponse.ok) {
+        if (localLoginResponse.status === 401) {
+            alert('Usuário ou senha inválidos');
+            return;
+        } else if (localLoginResponse.ok) {
             const result = await localLoginResponse.json();
             const token = result.token;
 
@@ -107,9 +110,6 @@ document.getElementById('loginForm').onsubmit = async function(event) {
                 await initDB();
                 await salvarDadosOffline(result.userData);
                 return;
-            } else {
-                alert('Usuário ou senha inválidos');
-                return;
             }
         } else {
             // Caso o login no servidor local falhe, tentamos o servidor externo
@@ -121,7 +121,10 @@ document.getElementById('loginForm').onsubmit = async function(event) {
                 body: JSON.stringify({ username, password }),
             });
 
-            if (externalLoginResponse.ok) {
+            if (externalLoginResponse.status === 401) {
+                alert('Usuário ou senha inválidos');
+                return;
+            } else if (externalLoginResponse.ok) {
                 const result = await externalLoginResponse.json();
                 const token = result.token;
 
@@ -135,9 +138,6 @@ document.getElementById('loginForm').onsubmit = async function(event) {
                     
                     await initDB();
                     await salvarDadosOffline(result.userData);
-                    return;
-                } else {
-                    alert('Usuário ou senha inválidos');
                     return;
                 }
             } else {
